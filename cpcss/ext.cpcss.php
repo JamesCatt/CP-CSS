@@ -3,7 +3,7 @@
 class Cpcss_ext {
     
     var $name           = 'CP CSS';
-    var $version        = '1.0.0';
+    var $version        = '1.1.0';
     var $description    = 'Allows adding of custom CSS to the ExpressionEngine Control Panel';
     var $settings_exist = 'y';
     var $docs_url       = '';
@@ -57,9 +57,9 @@ class Cpcss_ext {
             return FALSE;
         }
 
-        if ($current < '1.0.0')
+        if ($current < '1.1.0')
         {
-            // Update to version 1.0.0
+            // Update to version 1.1.0
         }
 
         ee()->db->where('class', __CLASS__);
@@ -113,15 +113,35 @@ class Cpcss_ext {
     
     function addcss()
     {
-        if (isset($this->settings['cpcssfile']) && $this->settings['cpcssfile'] != '') {
+        $siteId = ee()->config->item('site_id');
+        
+        if ($siteId == '1') {
+            
+            if (isset($this->settings['cpcssfile']) && $this->settings['cpcssfile'] != '') {
+            
+                return '@import url("' . $this->settings['cpcssfile'] . '");';
 
-            return '@import url("' . $this->settings['cpcssfile'] . '");';
+            } else if (isset($this->settings['cpcss']) && $this->settings['cpcss'] != '') {
 
-        } else if (isset($this->settings['cpcss']) && $this->settings['cpcss'] != '') {
+                return $this->settings['cpcss'];
 
-            return $this->settings['cpcss'];
+            }
+            
+        } else if ($siteId == '2') {
+            
+            if (isset($this->settings['cpcssfile2']) && $this->settings['cpcssfile2'] != '') {
+            
+                return '@import url("' . $this->settings['cpcssfile2'] . '");';
 
+            } else if (isset($this->settings['cpcss2']) && $this->settings['cpcss2'] != '') {
+
+                return $this->settings['cpcss2'];
+
+            }
+            
         }
+        
+        /**/
     }
     
 }
