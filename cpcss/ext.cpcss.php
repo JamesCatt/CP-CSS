@@ -3,10 +3,10 @@
 class Cpcss_ext {
     
     var $name           = 'CP CSS';
-    var $version        = '1.1.0';
+    var $version        = '1.2.0';
     var $description    = 'Allows adding of custom CSS to the ExpressionEngine Control Panel';
     var $settings_exist = 'y';
-    var $docs_url       = '';
+    var $docs_url       = 'https://github.com/JamesCatt/CP-CSS';
     
     var $settings   = array();
     
@@ -57,9 +57,9 @@ class Cpcss_ext {
             return FALSE;
         }
 
-        if ($current < '1.1.0')
+        if ($current < '1.2.0')
         {
-            // Update to version 1.1.0
+            // Update to version 1.2.0
         }
 
         ee()->db->where('class', __CLASS__);
@@ -76,15 +76,21 @@ class Cpcss_ext {
     function settings()
     {
         
+        $siteIds = ee()->db->select('site_id')->from('sites')->get();
+        
         $settings = array();
-
-        $settings['cpcss']      = array('t', '', "");
-
-        $settings['cpcssfile']      = array('i', '', "");
-
-        $settings['cpcss2']      = array('t', '', "");
-
-        $settings['cpcssfile2']      = array('i', '', "");
+        
+        foreach($siteIds->result_array() as $row) {
+            
+            $settingString = 'cpcss' . (string)$row['site_id'];
+            
+            $settings[$settingString] = array('t', '', "");
+                
+            $fileSettingString = 'cpcssfile' . (string)$row['site_id'];
+            
+            $settings[$fileSettingString] = array('i', '', "");
+            
+        }
 
         // General pattern:
         //
@@ -111,34 +117,29 @@ class Cpcss_ext {
         ee()->db->delete('extensions');
     }
     
+    /**
+     * Add CSS
+     *
+     * This function returns either raw CSS or an @import declaration linking
+     * to a CSS file, as set by the user on a per-site basis.
+     *
+     * @return string
+     */    
     function addcss()
     {
         $siteId = ee()->config->item('site_id');
         
-        if ($siteId == '1') {
+        $settingString = 'cpcss' . (string)$siteId;
+        $fileSettingString = 'cpcssfile' . (string)$siteId;
+        
+        if (isset($this->settings[$fileSettingString]) && $this->settings[$fileSettingString] != '') {
             
-            if (isset($this->settings['cpcssfile']) && $this->settings['cpcssfile'] != '') {
-            
-                return '@import url("' . $this->settings['cpcssfile'] . '");';
+            return '@import url("' . $this->settings[$fileSettingString] . '");';
 
-            } else if (isset($this->settings['cpcss']) && $this->settings['cpcss'] != '') {
+        } else if (isset($this->settings[$settingString]) && $this->settings[$settingString] != '') {
 
-                return $this->settings['cpcss'];
+            return $this->settings[$settingString];
 
-            }
-            
-        } else if ($siteId == '2') {
-            
-            if (isset($this->settings['cpcssfile2']) && $this->settings['cpcssfile2'] != '') {
-            
-                return '@import url("' . $this->settings['cpcssfile2'] . '");';
-
-            } else if (isset($this->settings['cpcss2']) && $this->settings['cpcss2'] != '') {
-
-                return $this->settings['cpcss2'];
-
-            }
-            
         }
         
         /**/
